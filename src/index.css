@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0F3052;
+  --color-gray: #707070;
+  --color-lightnavy: #56748B;
+  --color-bluenavy: #2e6da4;
+
+  --font-heading: "DM Serif Display", serif;
+  --font-body: "DM Sans", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes nodeActivate {
+  from { background-color: rgba(15, 48, 82, 0.07); color: #0F3052; }
+  to   { background-color: #0F3052; color: white; }
+}
+
+@keyframes nodePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(15, 48, 82, 0.4); }
+  70%  { box-shadow: 0 0 0 14px rgba(15, 48, 82, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(15, 48, 82, 0); }
+}
+
+@keyframes lineGrow {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+@keyframes lineGrowV {
+  from { height: 0; }
+  to   { height: 100%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
