@@ -329,7 +329,6 @@ export default function DecisionTree({ onBack }: Props) {
       {showResult && result && (
         <ResultPopup result={result} onBack={onBack} />
       )}
-
     </div>
   )
 }
