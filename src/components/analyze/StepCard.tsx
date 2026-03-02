@@ -50,7 +50,7 @@ export default function StepCard({ card, onPick, compact }: Props) {
             <button
               key={opt.edgeId}
               onClick={() => onPick(opt.edgeId, opt.targetNodeId)}
-              className="text-left border bg-white border-navy rounded-lg px-2 py-1.5 hover:bg-navy/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              className="text-left bg-white rounded-lg px-2 py-1.5 hover:bg-navy/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
               <p className="font-body text-[10px] font-semibold text-navy leading-snug">
                 {opt.label}
