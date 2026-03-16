@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { LuDownload } from 'react-icons/lu'
 import GuideTree from '../components/guide/GuideTree'
+import WaterSafetyInfo from '../components/guide/WaterSafetyInfo'
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../components/tree/treeData'
 
 export default function Guide() {
@@ -70,9 +71,12 @@ export default function Guide() {
       </div>
 
       {/* Tree — no body padding anymore so goes naturally edge-to-edge */}
-      <div ref={scrollRef} className="overflow-x-auto pb-8">
+      <div ref={scrollRef} className="overflow-x-auto">
         <GuideTree ref={svgRef} />
       </div>
+
+      {/* Water safety background info */}
+      <WaterSafetyInfo />
 
     </main>
   )
