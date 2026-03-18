@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   INITIAL_EDGES,
@@ -77,9 +78,11 @@ export default function DecisionTree({ onBack }: Props) {
   const [animatingEdgeId, setAnimatingEdgeId] = useState<string | null>(null)
 
   // ── UI phase ─────────────────────────────────────────────────────────────
-  const [aiDeciding, setAiDeciding] = useState(false)
-  const [result,     setResult    ] = useState<BacteriaResult | null>(null)
-  const [showResult, setShowResult] = useState(false)
+  const [aiDeciding,    setAiDeciding   ] = useState(false)
+  const [result,        setResult       ] = useState<BacteriaResult | null>(null)
+  const [showResult,    setShowResult   ] = useState(false)
+  const [invalidImage,  setInvalidImage ] = useState(false)
+  const [historyDepth,  setHistoryDepth ] = useState(0)
 
   // ── ViewBox smooth pan ───────────────────────────────────────────────────
   const panTo = useCallback((target: ViewBox) => {
@@ -202,8 +205,62 @@ export default function DecisionTree({ onBack }: Props) {
       return e
     }))
 
+    setHistoryDepth(d => d + 1)
     traverseEdge(edgeId, targetNodeId, path, ePath)
   }, [traverseEdge])
+
+  // ── Go back one user step ────────────────────────────────────────────────
+  const goBack = useCallback(() => {
+    const path  = activePathRef.current
+    const ePath = activeEPathRef.current
+    if (path.length <= 2) return // nothing the user can undo (gram_stain was AI)
+
+    const currentId  = path[path.length - 1]
+    const previousId = path[path.length - 2]
+    const lastEdgeId = ePath[ePath.length - 1]
+
+    // Un-fade siblings that were faded when we made this choice
+    const unfadeNodes = new Set<string>()
+    const unfadeEdges = new Set<string>()
+    INITIAL_EDGES
+      .filter(e => e.sourceId === previousId && e.targetId !== currentId)
+      .forEach(e => {
+        unfadeEdges.add(e.id)
+        unfadeNodes.add(e.targetId)
+        getDescendants(e.targetId).forEach(id => unfadeNodes.add(id))
+        getDescEdges(e.targetId).forEach(id => unfadeEdges.add(id))
+      })
+
+    const currentDesc      = getDescendants(currentId)
+    const currentDescEdges = getDescEdges(currentId)
+
+    activePathRef.current  = path.slice(0, -1)
+    activeEPathRef.current = ePath.slice(0, -1)
+    activeIdRef.current    = previousId
+    setActiveId(previousId)
+    setHistoryDepth(d => d - 1)
+
+    setNodes(prev => prev.map(n => {
+      if (n.id === previousId)                               return { ...n, status: 'active' }
+      if (n.id === currentId || currentDesc.includes(n.id)) return { ...n, status: 'idle' }
+      if (unfadeNodes.has(n.id))                            return { ...n, status: 'idle' }
+      return n
+    }))
+    setEdges(prev => prev.map(e => {
+      if (e.id === lastEdgeId)                              return { ...e, status: 'idle' }
+      if (currentDescEdges.includes(e.id))                  return { ...e, status: 'idle' }
+      if (unfadeEdges.has(e.id))                            return { ...e, status: 'idle' }
+      return e
+    }))
+    setDashOffsets(prev => { const n = { ...prev }; delete n[lastEdgeId]; return n })
+
+    const prevNode = INITIAL_NODES.find(n => n.id === previousId)!
+    if (isMobileRef.current) {
+      panTo({ x: prevNode.x - 380 * 0.25, y: prevNode.y - 285 * 0.5, width: 380, height: 285 })
+    } else {
+      panTo(getViewBoxForNode(prevNode))
+    }
+  }, [panTo])
 
   // ── Stable refs so the mount effect doesn't go stale ────────────────────
   const traverseRef = useRef(traverseEdge)
@@ -213,6 +270,7 @@ export default function DecisionTree({ onBack }: Props) {
 
   // ── Mount: show gram_stain → AI auto-decides ─────────────────────────────
   useEffect(() => {
+    let alive = true
     const gramNode = INITIAL_NODES.find(n => n.id === 'gram_stain')!
 
     setNodes(prev => prev.map(n => n.id === 'gram_stain' ? { ...n, status: 'active' } : n))
@@ -231,10 +289,41 @@ export default function DecisionTree({ onBack }: Props) {
     // Show AI card only after the pan has settled (~1700 ms total)
     const t_ai = setTimeout(() => setAiDeciding(true), 1700)
 
-    // AI decides gram stain result (delay long enough for card to be visible)
-    const t2 = setTimeout(() => {
+    // Start API call immediately; also enforce a minimum wait of 3500 ms
+    const apiCall = (async () => {
+      try {
+        await axios.get('https://fastapicourse1-production-b030.up.railway.app/health')
+      } catch { /* ignore health check errors */ }
+      try {
+        const dataUrl = sessionStorage.getItem('analyzeImage')
+        if (!dataUrl) return null
+        const [header, b64] = dataUrl.split(',')
+        const mime = header.match(/:(.*?);/)?.[1] ?? 'image/jpeg'
+        const bytes = atob(b64)
+        const arr = new Uint8Array(bytes.length)
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i)
+        const blob = new Blob([arr], { type: mime })
+        const form = new FormData()
+        form.append('file', blob, 'image.jpg')
+        const res = await axios.post(
+          'https://fastapicourse1-production-b030.up.railway.app/predict-gram',
+          form,
+        )
+        const prediction = res.data.prediction as string | null
+        if (prediction !== 'gram_positive' && prediction !== 'gram_negative') return 'invalid'
+        return prediction === 'gram_positive'
+      } catch {
+        return null // fallback to random
+      }
+    })()
+
+    const minWait = new Promise<void>(r => setTimeout(r, 3500))
+
+    Promise.all([apiCall, minWait]).then(([apiResult]) => {
+      if (!alive) return
       setAiDeciding(false)
-      const positive    = Math.random() > 0.5
+      if (apiResult === 'invalid') { setInvalidImage(true); return }
+      const positive    = apiResult ?? Math.random() > 0.5
       const edgeId      = positive ? 'e_gram_catalase' : 'e_gram_oxidase'
       const targetId    = positive ? 'catalase'        : 'oxidase'
       const otherEdgeId = positive ? 'e_gram_oxidase'  : 'e_gram_catalase'
@@ -254,12 +343,12 @@ export default function DecisionTree({ onBack }: Props) {
       }))
 
       traverseRef.current(edgeId, targetId, ['gram_stain', targetId], [edgeId])
-    }, 3500)
+    })
 
     return () => {
+      alive = false
       clearTimeout(t1)
       clearTimeout(t_ai)
-      clearTimeout(t2)
       Object.values(edgeRafs.current).forEach(id => cancelAnimationFrame(id))
       if (vbRaf.current) cancelAnimationFrame(vbRaf.current)
     }
@@ -321,13 +410,38 @@ export default function DecisionTree({ onBack }: Props) {
       {/* User step card */}
       {currentCard && activeNode && !showResult && (
         <FloatingCard relX={cardRelX} relY={cardRelY} toRight={cardRight} isMobile={isMobile} key={activeId}>
-          <StepCard card={currentCard} onPick={pickOption} compact={isMobile} />
+          <StepCard card={currentCard} onPick={pickOption} onBack={goBack} canGoBack={historyDepth > 0} compact={isMobile} />
         </FloatingCard>
       )}
 
       {/* Result overlay */}
       {showResult && result && (
         <ResultPopup result={result} onBack={onBack} />
+      )}
+
+      {/* Invalid image overlay */}
+      {invalidImage && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl px-8 py-10 max-w-sm w-full mx-4 text-center flex flex-col items-center gap-4">
+            <div className="bg-red-50 rounded-2xl p-4">
+              <svg className="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h2 className="font-heading text-xl font-bold text-navy">Not a Bacteria Image</h2>
+            <p className="font-body text-sm text-lightnavy leading-relaxed">
+              We couldn't detect a valid bacteria sample in your image. Please upload a clear microscope slide image and try again.
+            </p>
+            <button
+              onClick={onBack}
+              className="font-body text-sm font-medium text-white bg-navy rounded-full px-6 py-2.5 hover:opacity-90 transition-opacity cursor-pointer"
+            >
+              Upload Another Image
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

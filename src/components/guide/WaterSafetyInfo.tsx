@@ -36,7 +36,7 @@ export default function WaterSafetyInfo() {
     <section className="px-4 md:px-10 py-12 border-t border-gray-100">
 
       {/* Section 1 — Introduction */}
-      <div className="max-w-4xl mx-auto mb-12">
+      <div className="max-w-full mx-auto mb-12 px-4 md:px-10">
         <p className="font-body text-bluenavy text-sm font-semibold tracking-widest uppercase mb-2">
           · Background ·
         </p>
@@ -61,7 +61,7 @@ export default function WaterSafetyInfo() {
       </div>
 
       {/* Section 2 — Types of pathogenic bacteria */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-full mx-auto px-4 md:px-10">
         <h2 className="font-heading text-xl md:text-3xl font-bold text-navy leading-tight mb-5">
           2. Types of Pathogenic Bacteria in Water
         </h2>
