@@ -416,7 +416,7 @@ export default function DecisionTree({ onBack }: Props) {
 
       {/* Result overlay */}
       {showResult && result && (
-        <ResultPopup result={result} onBack={onBack} />
+        <ResultPopup result={result} onBack={() => { sessionStorage.removeItem('analyzeImage'); onBack() }} />
       )}
 
       {/* Invalid image overlay */}

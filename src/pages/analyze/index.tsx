@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import Upload from '../components/analyze/Upload'
+import Upload from './Upload'
 
 export default function Analyze() {
   const navigate = useNavigate()

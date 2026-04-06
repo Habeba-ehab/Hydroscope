@@ -1,8 +1,8 @@
 import { useRef, useEffect } from 'react'
 import { LuDownload } from 'react-icons/lu'
-import GuideTree from '../components/guide/GuideTree'
-import WaterSafetyInfo from '../components/guide/WaterSafetyInfo'
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../components/tree/treeData'
+import GuideTree from './GuideTree'
+import WaterSafetyInfo from './WaterSafetyInfo'
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../analyze-tree/treeData'
 
 export default function Guide() {
   const svgRef    = useRef<SVGSVGElement>(null)

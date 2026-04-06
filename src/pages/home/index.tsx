@@ -1,8 +1,8 @@
-import Hero from '../components/landing/Hero'
-import AboutUs from '../components/landing/AboutUs'
-import HowItWorks from '../components/landing/HowItWorks'
-import SupportedBacteria from '../components/landing/SupportedBacteria'
-import WhyHydroScope from '../components/landing/WhyHydroScope'
+import Hero from './Hero'
+import AboutUs from './AboutUs'
+import HowItWorks from './HowItWorks'
+import SupportedBacteria from './SupportedBacteria'
+import WhyHydroScope from './WhyHydroScope'
 
 export default function Home() {
   return (

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import Home        from './pages/Home'
-import Analyze     from './pages/Analyze'
-import AnalyzeTree from './pages/AnalyzeTree'
-import Guide       from './pages/Guide'
+import Home        from './pages/home'
+import Analyze     from './pages/analyze'
+import AnalyzeTree from './pages/analyze-tree'
+import Guide       from './pages/guide'
 import Navbar      from './components/Navbar'
 import Footer      from './components/Footer'
 

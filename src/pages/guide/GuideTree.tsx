@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
-import { CANVAS_WIDTH, CANVAS_HEIGHT, INITIAL_EDGES, INITIAL_NODES } from '../tree/treeData'
-import { NH, NW, edgeMidpoint, makeEdgePath } from '../tree/helpers'
+import { CANVAS_WIDTH, CANVAS_HEIGHT, INITIAL_EDGES, INITIAL_NODES } from '../analyze-tree/treeData'
+import { NH, NW, edgeMidpoint, makeEdgePath } from '../analyze-tree/helpers'
 
 // ─── Step labels shown ABOVE each test / medium / root node ───────────────────
 

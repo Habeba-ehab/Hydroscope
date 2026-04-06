@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import DecisionTree from '../components/analyze/DecisionTree'
+import DecisionTree from './DecisionTree'
 
 export default function AnalyzeTree() {
   const navigate = useNavigate()
