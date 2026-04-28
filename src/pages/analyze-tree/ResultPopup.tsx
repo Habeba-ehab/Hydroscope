@@ -143,7 +143,7 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
               className="bg-white rounded-2xl shadow-2xl p-6 w-[50vw] max-h-[80vh] overflow-auto cursor-default"
               onClick={e => e.stopPropagation()}
             >
-              <TreeSnapshot nodes={nodes} edges={edges} />
+              <TreeSnapshot nodes={nodes} edges={edges} /> 
             </div>
           )}
           <button
