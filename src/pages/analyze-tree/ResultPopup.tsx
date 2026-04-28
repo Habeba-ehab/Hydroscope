@@ -135,7 +135,7 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
               src={uploadedImage}
               alt="Uploaded sample"
               className="max-w-[80vw] max-h-[80vh] rounded-2xl shadow-2xl object-contain"
-              onClick={e => e.stopPropagation()} 
+              onClick={e => e.stopPropagation()} d
             />
           )}
           {lightbox === 'tree' && (
