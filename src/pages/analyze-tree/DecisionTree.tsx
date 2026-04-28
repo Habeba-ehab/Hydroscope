@@ -8,7 +8,7 @@ import {
   RESULT_NODE_IDS,
   STEP_CARDS,
   getViewBoxForNode,
-} from './treeData'
+} from './treeData' 
 import type { BacteriaResult, TreeEdge, TreeNode, ViewBox } from './types'
 import {
   EDGE_ANIM_MS,
