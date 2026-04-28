@@ -20,7 +20,8 @@ import TreeSvg      from './TreeSvg'
 import FloatingCard from './FloatingCard'
 import AiCard       from './AiCard'
 import StepCard     from './StepCard'
-import ResultPopup  from './ResultPopup'
+import ResultPopup      from './ResultPopup'
+import GramResultPopup, { type GramApiResult } from './GramResultPopup'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,7 @@ export default function DecisionTree({ onBack }: Props) {
   const [showResult,    setShowResult   ] = useState(false)
   const [invalidImage,  setInvalidImage ] = useState(false)
   const [historyDepth,  setHistoryDepth ] = useState(0)
+  const [gramPopup,     setGramPopup    ] = useState<{ data: GramApiResult; positive: boolean } | null>(null)
 
   // ── ViewBox smooth pan ───────────────────────────────────────────────────
   const panTo = useCallback((target: ViewBox) => {
@@ -262,6 +264,35 @@ export default function DecisionTree({ onBack }: Props) {
     }
   }, [panTo])
 
+  // ── Proceed after gram popup (continue or override) ─────────────────────
+  const proceedWithGram = useCallback((positive: boolean) => {
+    setGramPopup(null)
+    const edgeId      = positive ? 'e_gram_catalase' : 'e_gram_oxidase'
+    const targetId    = positive ? 'catalase'        : 'oxidase'
+    const otherEdgeId = positive ? 'e_gram_oxidase'  : 'e_gram_catalase'
+    const otherTarget = positive ? 'oxidase'         : 'catalase'
+    const fadedD  = getDescendants(otherTarget)
+    const fadedDE = getDescEdges(otherTarget)
+    setNodes(prev => prev.map(n => {
+      if (n.id === 'gram_stain')                          return { ...n, status: 'completed' }
+      if (n.id === otherTarget || fadedD.includes(n.id)) return { ...n, status: 'faded' }
+      return n
+    }))
+    setEdges(prev => prev.map(e => {
+      if (e.id === otherEdgeId || fadedDE.includes(e.id)) return { ...e, status: 'faded' }
+      return e
+    }))
+    traverseEdge(edgeId, targetId, ['gram_stain', targetId], [edgeId])
+  }, [traverseEdge])
+
+  // ── Freeze all animations the moment the result popup opens ─────────────
+  useEffect(() => {
+    if (!showResult) return
+    if (vbRaf.current !== null) { cancelAnimationFrame(vbRaf.current); vbRaf.current = null }
+    Object.values(edgeRafs.current).forEach(id => cancelAnimationFrame(id))
+    edgeRafs.current = {}
+  }, [showResult])
+
   // ── Stable refs so the mount effect doesn't go stale ────────────────────
   const traverseRef = useRef(traverseEdge)
   traverseRef.current = traverseEdge
@@ -292,9 +323,6 @@ export default function DecisionTree({ onBack }: Props) {
     // Start API call immediately; also enforce a minimum wait of 3500 ms
     const apiCall = (async () => {
       try {
-        await axios.get('https://fastapicourse1-production-b030.up.railway.app/health')
-      } catch { /* ignore health check errors */ }
-      try {
         const dataUrl = sessionStorage.getItem('analyzeImage')
         if (!dataUrl) return null
         const [header, b64] = dataUrl.split(',')
@@ -306,12 +334,12 @@ export default function DecisionTree({ onBack }: Props) {
         const form = new FormData()
         form.append('file', blob, 'image.jpg')
         const res = await axios.post(
-          'https://fastapicourse1-production-b030.up.railway.app/predict-gram',
+          'https://kenzykhaled55-gram-api.hf.space/predict-gram',
           form,
         )
-        const prediction = res.data.prediction as string | null
-        if (prediction !== 'gram_positive' && prediction !== 'gram_negative') return 'invalid'
-        return prediction === 'gram_positive'
+        const data = res.data as GramApiResult
+        if (data.prediction !== 'gram_positive' && data.prediction !== 'gram_negative') return 'invalid'
+        return { data, positive: data.prediction === 'gram_positive' }
       } catch {
         return null // fallback to random
       }
@@ -322,27 +350,30 @@ export default function DecisionTree({ onBack }: Props) {
     Promise.all([apiCall, minWait]).then(([apiResult]) => {
       if (!alive) return
       setAiDeciding(false)
-      if (apiResult === 'invalid') { setInvalidImage(true); return }
-      const positive    = apiResult ?? Math.random() > 0.5
-      const edgeId      = positive ? 'e_gram_catalase' : 'e_gram_oxidase'
-      const targetId    = positive ? 'catalase'        : 'oxidase'
-      const otherEdgeId = positive ? 'e_gram_oxidase'  : 'e_gram_catalase'
-      const otherTarget = positive ? 'oxidase'         : 'catalase'
-
-      const fadedD  = getDescendants(otherTarget)
-      const fadedDE = getDescEdges(otherTarget)
-
-      setNodes(prev => prev.map(n => {
-        if (n.id === 'gram_stain')                          return { ...n, status: 'completed' }
-        if (n.id === otherTarget || fadedD.includes(n.id)) return { ...n, status: 'faded' }
-        return n
-      }))
-      setEdges(prev => prev.map(e => {
-        if (e.id === otherEdgeId || fadedDE.includes(e.id)) return { ...e, status: 'faded' }
-        return e
-      }))
-
-      traverseRef.current(edgeId, targetId, ['gram_stain', targetId], [edgeId])
+      if (apiResult === 'invalid' || apiResult === null) {
+        if (apiResult === 'invalid') { setInvalidImage(true); return }
+        // fallback: no API data, go random without popup
+        const positive    = Math.random() > 0.5
+        const edgeId      = positive ? 'e_gram_catalase' : 'e_gram_oxidase'
+        const targetId    = positive ? 'catalase'        : 'oxidase'
+        const otherEdgeId = positive ? 'e_gram_oxidase'  : 'e_gram_catalase'
+        const otherTarget = positive ? 'oxidase'         : 'catalase'
+        const fadedD  = getDescendants(otherTarget)
+        const fadedDE = getDescEdges(otherTarget)
+        setNodes(prev => prev.map(n => {
+          if (n.id === 'gram_stain')                          return { ...n, status: 'completed' }
+          if (n.id === otherTarget || fadedD.includes(n.id)) return { ...n, status: 'faded' }
+          return n
+        }))
+        setEdges(prev => prev.map(e => {
+          if (e.id === otherEdgeId || fadedDE.includes(e.id)) return { ...e, status: 'faded' }
+          return e
+        }))
+        traverseRef.current(edgeId, targetId, ['gram_stain', targetId], [edgeId])
+        return
+      }
+      // Show the confirmation popup before proceeding
+      setGramPopup(apiResult)
     })
 
     return () => {
@@ -414,9 +445,18 @@ export default function DecisionTree({ onBack }: Props) {
         </FloatingCard>
       )}
 
+      {/* Gram stain AI result popup */}
+      {gramPopup && (
+        <GramResultPopup
+          data={gramPopup.data}
+          onContinue={() => proceedWithGram(gramPopup.positive)}
+          onDisagree={() => proceedWithGram(!gramPopup.positive)}
+        />
+      )}
+
       {/* Result overlay */}
       {showResult && result && (
-        <ResultPopup result={result} onBack={() => { sessionStorage.removeItem('analyzeImage'); onBack() }} />
+        <ResultPopup result={result} nodes={nodes} edges={edges} onBack={() => { sessionStorage.removeItem('analyzeImage'); onBack() }} />
       )}
 
       {/* Invalid image overlay */}
