@@ -337,9 +337,14 @@ export default function DecisionTree({ onBack }: Props) {
           'https://kenzykhaled55-gram-api.hf.space/predict-gram',
           form,
         )
+        console.log('AI response:', res.data)
         const data = res.data as GramApiResult
-        if (data.prediction !== 'gram_positive' && data.prediction !== 'gram_negative') return 'invalid'
-        return { data, positive: data.prediction === 'gram_positive' }
+        if (data.prediction === 'gram_positive' || data.prediction === 'gram_negative') {
+          return { data, positive: data.prediction === 'gram_positive' }
+        }
+        if (data.prediction === 'not_gram_stain') return 'not_gram_stain'
+        // uncertain / rejected — show popup with re-upload button
+        return { data, positive: false }
       } catch {
         return null // fallback to random
       }
@@ -350,8 +355,8 @@ export default function DecisionTree({ onBack }: Props) {
     Promise.all([apiCall, minWait]).then(([apiResult]) => {
       if (!alive) return
       setAiDeciding(false)
-      if (apiResult === 'invalid' || apiResult === null) {
-        if (apiResult === 'invalid') { setInvalidImage(true); return }
+      if (apiResult === 'not_gram_stain') { setInvalidImage(true); return }
+      if (apiResult === null) {
         // fallback: no API data, go random without popup
         const positive    = Math.random() > 0.5
         const edgeId      = positive ? 'e_gram_catalase' : 'e_gram_oxidase'
@@ -451,6 +456,7 @@ export default function DecisionTree({ onBack }: Props) {
           data={gramPopup.data}
           onContinue={() => proceedWithGram(gramPopup.positive)}
           onDisagree={() => proceedWithGram(!gramPopup.positive)}
+          onReupload={() => { sessionStorage.removeItem('analyzeImage'); onBack() }}
         />
       )}
 
@@ -459,7 +465,7 @@ export default function DecisionTree({ onBack }: Props) {
         <ResultPopup result={result} nodes={nodes} edges={edges} onBack={() => { sessionStorage.removeItem('analyzeImage'); onBack() }} />
       )}
 
-      {/* Invalid image overlay */}
+      {/* Not a gram stain error overlay */}
       {invalidImage && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/80 backdrop-blur-sm">
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl px-8 py-10 max-w-sm w-full mx-4 text-center flex flex-col items-center gap-4">
@@ -470,12 +476,12 @@ export default function DecisionTree({ onBack }: Props) {
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
-            <h2 className="font-heading text-xl font-bold text-navy">Not a Bacteria Image</h2>
+            <h2 className="font-heading text-xl font-bold text-navy">Not a Gram Stain Image</h2>
             <p className="font-body text-sm text-lightnavy leading-relaxed">
-              We couldn't detect a valid bacteria sample in your image. Please upload a clear microscope slide image and try again.
+              We couldn't detect a valid gram-stained slide in your image. Please upload a clear microscope slide image and try again.
             </p>
             <button
-              onClick={onBack}
+              onClick={() => { sessionStorage.removeItem('analyzeImage'); onBack() }}
               className="font-body text-sm font-medium text-white bg-navy rounded-full px-6 py-2.5 hover:opacity-90 transition-opacity cursor-pointer"
             >
               Upload Another Image
@@ -483,6 +489,7 @@ export default function DecisionTree({ onBack }: Props) {
           </div>
         </div>
       )}
+
     </div>
   )
 }

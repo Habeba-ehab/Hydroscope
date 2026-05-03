@@ -3,21 +3,24 @@ import { LuSparkles, LuTriangleAlert } from 'react-icons/lu'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface GramApiResult {
-  prediction: 'gram_positive' | 'gram_negative'
+  prediction: 'gram_positive' | 'gram_negative' | 'uncertain' | 'not_gram_stain'
   confidence: number
   all_probs: {
     gram_negative: number
     gram_positive: number
     not_gram_stain: number
   }
-  is_confident: boolean
-  warning: string | null
+  status: string
+  message: string
+  is_confident?: boolean
+  warning?: string | null
 }
 
 interface Props {
   data: GramApiResult
   onContinue: () => void
   onDisagree: () => void
+  onReupload?: () => void
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -43,9 +46,14 @@ function ProbBar({ label, value, highlight }: { label: string; value: number; hi
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function GramResultPopup({ data, onContinue, onDisagree }: Props) {
-  const isPositive = data.prediction === 'gram_positive'
-  const predLabel  = isPositive ? 'Gram Positive' : 'Gram Negative'
+export default function GramResultPopup({ data, onContinue, onDisagree, onReupload }: Props) {
+  const isUncertain = data.prediction === 'uncertain'
+  const isPositive  = data.prediction === 'gram_positive'
+  const predLabel   = isUncertain ? 'Uncertain' : isPositive ? 'Gram Positive' : 'Gram Negative'
+  const isHighConf  = data.status === 'high_confidence'
+  const predBg      = isUncertain ? 'bg-amber-50'    : isPositive ? 'bg-violet-50'    : 'bg-cyan-50'
+  const predText    = isUncertain ? 'text-amber-700'  : isPositive ? 'text-violet-700'  : 'text-cyan-700'
+  const barColor    = isUncertain ? 'bg-amber-400'    : isPositive ? 'bg-violet-400'    : 'bg-cyan-400'
 
   return (
     <div
@@ -55,7 +63,7 @@ export default function GramResultPopup({ data, onContinue, onDisagree }: Props)
       <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full">
 
         {/* Header */}
-        <div className="flex items-center gap-2.5 mb-5">
+        <div className="flex items-center gap-2.5 mb-4">
           <div className="w-9 h-9 rounded-2xl bg-navy/10 flex items-center justify-center shrink-0">
             <LuSparkles className="w-4 h-4 text-navy" />
           </div>
@@ -65,34 +73,40 @@ export default function GramResultPopup({ data, onContinue, onDisagree }: Props)
           </div>
         </div>
 
+        {/* AI message */}
+        {data.message && (
+          <div className={`flex gap-2 rounded-2xl px-3 py-2.5 mb-4 ${isHighConf ? 'bg-green-50' : 'bg-amber-50'}`}>
+            <LuTriangleAlert className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isHighConf ? 'text-green-500' : 'text-amber-500'}`} />
+            <p className={`font-body text-[11px] leading-relaxed ${isHighConf ? 'text-green-700' : 'text-amber-700'}`}>
+              {data.message}
+            </p>
+          </div>
+        )}
+
         {/* Prediction + confidence numbers */}
-        <div className={`rounded-2xl px-4 py-3 mb-3 flex items-center justify-between ${isPositive ? 'bg-violet-50' : 'bg-cyan-50'}`}>
+        <div className={`rounded-2xl px-4 py-3 mb-3 flex items-center justify-between ${predBg}`}>
           <div>
             <p className="font-body text-[10px] text-lightnavy mb-0.5">Prediction</p>
-            <p className={`font-heading text-lg font-bold ${isPositive ? 'text-violet-700' : 'text-cyan-700'}`}>
-              {predLabel}
-            </p>
+            <p className={`font-heading text-lg font-bold ${predText}`}>{predLabel}</p>
           </div>
           <div className="text-right">
             <p className="font-body text-[10px] text-lightnavy mb-0.5">Confidence</p>
-            <p className={`font-heading text-lg font-bold ${isPositive ? 'text-violet-700' : 'text-cyan-700'}`}>
-              {data.confidence.toFixed(1)}%
-            </p>
+            <p className={`font-heading text-lg font-bold ${predText}`}>{data.confidence.toFixed(1)}%</p>
           </div>
         </div>
 
         {/* Confidence bar */}
         <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden mb-2">
           <div
-            className={`h-full rounded-full transition-all duration-700 ${isPositive ? 'bg-violet-400' : 'bg-cyan-400'}`}
+            className={`h-full rounded-full transition-all duration-700 ${barColor}`}
             style={{ width: `${Math.min(data.confidence, 100)}%` }}
           />
         </div>
 
         {/* Confident badge */}
         <div className="flex justify-end mb-4">
-          <span className={`font-body text-[10px] px-2 py-0.5 rounded-full ${data.is_confident ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
-            {data.is_confident ? 'High confidence' : 'Low confidence'}
+          <span className={`font-body text-[10px] px-2 py-0.5 rounded-full ${isHighConf ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+            {isHighConf ? 'High confidence' : 'Low confidence'}
           </span>
         </div>
 
@@ -106,29 +120,39 @@ export default function GramResultPopup({ data, onContinue, onDisagree }: Props)
           <ProbBar label="Not Gram Stain" value={data.all_probs.not_gram_stain} highlight={false} />
         </div>
 
-        {/* Override warning note */}
-        <div className="flex gap-2 bg-amber-50 rounded-2xl px-3 py-2.5 mb-5">
-          <LuTriangleAlert className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-          <p className="font-body text-[11px] text-amber-700 leading-relaxed">
-            Clicking <span className="font-semibold">I Disagree</span> will override the AI result and take the opposite identification path. Only do this if your direct microscopy observation contradicts the prediction.
-          </p>
-        </div>
-
         {/* Buttons */}
-        <div className="flex flex-col gap-2">
+        {isUncertain ? (
           <button
-            onClick={onContinue}
+            onClick={onReupload}
             className="w-full bg-navy text-white rounded-xl py-2.5 font-body text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
           >
-            Continue with AI Result
+            Upload Another Sample
           </button>
-          <button
-            onClick={onDisagree}
-            className="w-full border border-gray-200 text-navy rounded-xl py-2.5 font-body text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
-          >
-            I Disagree — Override Result
-          </button>
-        </div>
+        ) : (
+          <>
+            {/* Override warning note */}
+            <div className="flex gap-2 bg-amber-50 rounded-2xl px-3 py-2.5 mb-5">
+              <LuTriangleAlert className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="font-body text-[11px] text-amber-700 leading-relaxed">
+                Clicking <span className="font-semibold">I Disagree</span> will override the AI result and take the opposite identification path. Only do this if your direct microscopy observation contradicts the prediction.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={onContinue}
+                className="w-full bg-navy text-white rounded-xl py-2.5 font-body text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Continue with AI Result
+              </button>
+              <button
+                onClick={onDisagree}
+                className="w-full border border-gray-200 text-navy rounded-xl py-2.5 font-body text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                I Disagree — Override Result
+              </button>
+            </div>
+          </>
+        )}
 
       </div>
     </div>
