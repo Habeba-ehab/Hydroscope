@@ -1,0 +1,100 @@
+﻿
+> hydroscope@0.0.0 lint
+> eslint .
+
+
+C:\Hydroscope\src\components\Navbar.tsx
+  36:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Hydroscope\src\components\Navbar.tsx:36:5
+  34 |   // Close drawer on route change
+  35 |   useEffect(() => {
+> 36 |     setMenuOpen(false)
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |   }, [location.pathname])
+  38 |
+  39 |   return (  react-hooks/set-state-in-effect
+
+C:\Hydroscope\src\pages\analyze-tree\DecisionTree.tsx
+   69:28  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Hydroscope\src\pages\analyze-tree\DecisionTree.tsx:69:28
+  67 |   // On mobile skip the full-tree overview — start already zoomed to gram_stain
+  68 |   const _gn     = INITIAL_NODES.find(n => n.id === 'gram_stain')!
+> 69 |   const _initVB: ViewBox = isMobileRef.current
+     |                            ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  70 |     ? { x: _gn.x - 95, y: _gn.y - 142, width: 380, height: 285 }
+  71 |     : INITIAL_VIEWBOX
+  72 |   const [viewBox, setViewBox] = useState<ViewBox>(_initVB)  react-hooks/refs
+  298:3   error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Hydroscope\src\pages\analyze-tree\DecisionTree.tsx:298:3
+  296 |   // ── Stable refs so the mount effect doesn't go stale ────────────────────
+  297 |   const traverseRef = useRef(traverseEdge)
+> 298 |   traverseRef.current = traverseEdge
+      |   ^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  299 |   const panToRef = useRef(panTo)
+  300 |   panToRef.current = panTo
+  301 |                                                                                                                                                   react-hooks/refs
+  300:3   error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Hydroscope\src\pages\analyze-tree\DecisionTree.tsx:300:3
+  298 |   traverseRef.current = traverseEdge
+  299 |   const panToRef = useRef(panTo)
+> 300 |   panToRef.current = panTo
+      |   ^^^^^^^^^^^^^^^^ Cannot update ref during render
+  301 |
+  302 |   // ── Mount: show gram_stain → AI auto-decides ─────────────────────────────
+  303 |   useEffect(() => {                                                                                                                                                                            react-hooks/refs
+
+C:\Hydroscope\src\pages\analyze-tree\ResultPopup.tsx
+  119:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Hydroscope\src\pages\analyze-tree\ResultPopup.tsx:119:5
+  117 |
+  118 |   useEffect(() => {
+> 119 |     setUploadedImage(sessionStorage.getItem('analyzeImage'))
+      |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  120 |   }, [])
+  121 |
+  122 |   return (  react-hooks/set-state-in-effect
+
+C:\Hydroscope\src\pages\analyze\Upload.tsx
+  18:16  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Hydroscope\src\pages\analyze\Upload.tsx:18:16
+  16 |   useEffect(() => {
+  17 |     const saved = sessionStorage.getItem(SESSION_KEY)
+> 18 |     if (saved) setPreview(saved)
+     |                ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |   }, [])
+  20 |
+  21 |   function handleFile(f: File) {  react-hooks/set-state-in-effect
+  27:66  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   no-empty
+
+✖ 7 problems (7 errors, 0 warnings)
+

@@ -5,10 +5,12 @@ import AnalyzeTree from './pages/analyze-tree'
 import Guide       from './pages/guide'
 import Navbar      from './components/Navbar'
 import Footer      from './components/Footer'
+import Login       from './pages/Auth/Login'
 
 function AppContent() {
   const { pathname } = useLocation()
   const isTree = pathname === '/analyze/tree'
+  const isAuth = pathname === '/login' || pathname === '/signup'
 
   return (
     <div className="relative flex flex-col min-h-dvh">
@@ -20,16 +22,17 @@ function AppContent() {
           style={{ zIndex: 0, animation: 'fadeInUp 0.6s ease 0.1s both' }}
         />
       )}
-      <Navbar />
-      <div className="flex-1" style={{ zIndex: 1 }}>
+      {!isAuth && <Navbar />}
+      <div className="flex-1 flex flex-col" style={{ zIndex: 1 }}>
         <Routes>
           <Route path="/"             element={<Home />} />
           <Route path="/analyze"      element={<Analyze />} />
           <Route path="/analyze/tree" element={<AnalyzeTree />} />
           <Route path="/guide"        element={<Guide />} />
+          <Route path="/login"        element={<Login />} />
         </Routes>
       </div>
-      {!isTree && <Footer />}
+      {!isTree && !isAuth && <Footer />}
     </div>
   )
 }
