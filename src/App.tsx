@@ -29,6 +29,7 @@ function LoginTransition({ children }: { children: React.ReactNode }) {
   )
 }
 
+
 function AppContent() {
   const location = useLocation()
   const { pathname } = location
