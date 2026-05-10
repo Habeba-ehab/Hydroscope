@@ -1,5 +1,8 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useRef, useEffect, useState } from 'react'
+import Cookies from 'js-cookie'
+import { LogOut } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const links = [
   { to: '/', label: 'Home', end: true },
@@ -9,10 +12,20 @@ const links = [
 
 export default function Navbar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
   const linkRefs = useRef<(HTMLAnchorElement | null)[]>([])
   const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false })
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const handleLogout = () => {
+    Cookies.remove('access_token')
+    Cookies.remove('refresh_token')
+    Cookies.remove('user_name')
+    sessionStorage.clear() // Clear uploaded images and other session data
+    toast.success('Logged out successfully')
+    navigate('/login')
+  }
 
   useEffect(() => {
     const activeIndex = links.findIndex(link =>
@@ -80,8 +93,15 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right: hamburger on mobile, spacer on desktop */}
-          <div className="flex justify-end">
+          {/* Right: Logout on desktop, hamburger on mobile */}
+          <div className="flex justify-end items-center gap-4">
+            <button
+              onClick={handleLogout}
+              className="hidden md:flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-navy transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              Log Out
+            </button>
             <button
               className="md:hidden flex flex-col justify-center gap-1.5 p-2 -mr-2"
               onClick={() => setMenuOpen(true)}
@@ -124,7 +144,7 @@ export default function Navbar() {
         </div>
 
         {/* Drawer links */}
-        <div className="flex flex-col gap-1 p-4">
+        <div className="flex-1 flex flex-col gap-1 p-4 overflow-y-auto">
           {links.map(link => (
             <NavLink
               key={link.to}
@@ -132,13 +152,24 @@ export default function Navbar() {
               end={link.end}
               className={({ isActive }) =>
                 `py-3.5 px-4 rounded-xl text-sm font-medium transition-colors uppercase tracking-wide ${
-                  isActive ? 'bg-navy/8 text-navy font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-navy'
+                  isActive ? 'bg-navy/5 text-navy font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-navy'
                 }`
               }
             >
               {link.label}
             </NavLink>
           ))}
+        </div>
+
+        {/* Drawer Footer - Logout */}
+        <div className="p-4 border-t border-gray-100">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full py-3.5 px-4 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors uppercase tracking-wide"
+          >
+            <LogOut className="w-4 h-4" />
+            Log Out
+          </button>
         </div>
       </div>
     </>

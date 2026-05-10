@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast'
 
 const SESSION_KEY = 'analyzeImage'
 
@@ -19,6 +20,14 @@ export default function Upload({ onAnalyze }: Props) {
   }, [])
 
   function handleFile(f: File) {
+    const allowed = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp', '.gif']
+    const ext = f.name.toLowerCase().substring(f.name.lastIndexOf('.'))
+    
+    if (!allowed.includes(ext)) {
+      toast.error('Unsupported file format. Please upload a valid microscopy image.')
+      return
+    }
+
     setFileName(f.name)
     const reader = new FileReader()
     reader.onload = e => {
@@ -78,7 +87,7 @@ export default function Upload({ onAnalyze }: Props) {
         <input
           ref={inputRef}
           type="file"
-          accept=".jpg,.jpeg,.png"
+          accept=".jpg,.jpeg,.png,.bmp,.tiff,.webp,.gif"
           className="hidden"
           onChange={onInputChange}
         />
@@ -125,13 +134,7 @@ export default function Upload({ onAnalyze }: Props) {
                 browse from your device
               </button>
             </p>
-            <div className="flex gap-2 mt-1">
-              {['JPG', 'PNG'].map(fmt => (
-                <span key={fmt} className="font-body text-xs text-navy bg-bluenavy/10 border border-gray-200 rounded-full px-3 py-1">
-                  {fmt}
-                </span>
-              ))}
-            </div>
+            <div className="h-6" />{/* Spacer replaces the format badges */}
           </div>
         )}
       </div>

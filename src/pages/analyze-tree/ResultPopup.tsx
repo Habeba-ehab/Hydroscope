@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { LuDownload } from 'react-icons/lu'
 import { INITIAL_EDGES, INITIAL_NODES } from './treeData'
 import { NH, NW, makeEdgePath, edgeMidpoint } from './helpers'
 import type { BacteriaResult, TreeEdge, TreeNode } from './types'
@@ -15,7 +16,7 @@ interface Props {
 
 // ─── Mini tree snapshot ───────────────────────────────────────────────────────
 
-function TreeSnapshot({ nodes, edges }: { nodes: TreeNode[]; edges: TreeEdge[] }) {
+function TreeSnapshot({ nodes, edges, svgRef }: { nodes: TreeNode[]; edges: TreeEdge[]; svgRef?: React.RefObject<SVGSVGElement | null> }) {
   const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]))
   const edgeById = Object.fromEntries(edges.map(e => [e.id, e]))
 
@@ -30,6 +31,7 @@ function TreeSnapshot({ nodes, edges }: { nodes: TreeNode[]; edges: TreeEdge[] }
 
   return (
     <svg
+      ref={svgRef}
       className="w-full h-full"
       viewBox={vb}
       preserveAspectRatio="xMidYMid meet"
@@ -114,10 +116,31 @@ function TreeSnapshot({ nodes, edges }: { nodes: TreeNode[]; edges: TreeEdge[] }
 export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [lightbox, setLightbox] = useState<'image' | 'tree' | null>(null)
+  const treeRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
     setUploadedImage(sessionStorage.getItem('analyzeImage'))
   }, [])
+
+  const handleDownloadPath = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!treeRef.current) return
+
+    try {
+      const svgData = new XMLSerializer().serializeToString(treeRef.current)
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `identification_path_${result.bacteriaName.replace(/\s+/g, '_').toLowerCase()}.svg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to download path:', err)
+    }
+  }
 
   return (
     <div
@@ -176,11 +199,7 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
                 ? <img src={uploadedImage} alt="Uploaded sample" className="w-full h-full object-cover" />
                 : <span className="font-body text-xs text-gray-300">No image</span>
               }
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/>
-                </svg>
-              </div>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors rounded-2xl" />
             </div>
           </div>
 
@@ -193,11 +212,20 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
               className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-4/3 flex items-center justify-center p-2 cursor-zoom-in group relative"
               onClick={() => setLightbox('tree')}
             >
-              <TreeSnapshot nodes={nodes} edges={edges} />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-navy opacity-0 group-hover:opacity-60 transition-opacity drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/>
-                </svg>
+              <TreeSnapshot nodes={nodes} edges={edges} svgRef={treeRef} />
+              
+              {/* Overlay with Download */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors rounded-2xl flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Download icon */}
+                  <button
+                    onClick={handleDownloadPath}
+                    title="Download Path"
+                    className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-navy hover:scale-110 transition-transform cursor-pointer"
+                  >
+                    <LuDownload className="w-5 h-5" strokeWidth={2.5} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

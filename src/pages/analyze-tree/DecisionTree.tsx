@@ -1,3 +1,4 @@
+import api from '../../api/axios'
 import axios from 'axios'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
@@ -333,9 +334,9 @@ export default function DecisionTree({ onBack }: Props) {
         const blob = new Blob([arr], { type: mime })
         const form = new FormData()
         form.append('file', blob, 'image.jpg')
-        const res = await axios.post(
-          'https://kenzykhaled55-gram-api.hf.space/predict-gram',
-          form,
+        const res = await api.post(
+          '/predict-gram',
+          form
         )
         console.log('AI response:', res.data)
         const data = res.data as GramApiResult

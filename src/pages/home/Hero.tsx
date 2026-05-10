@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Cookies from 'js-cookie'
 
 export default function Hero() {
   return (
@@ -24,7 +25,7 @@ export default function Hero() {
           className="font-heading text-3xl md:text-5xl font-bold text-navy leading-[1.15] mb-5"
           style={{ animation: 'fadeInUp 0.5s ease both 0.25s' }}
         >
-          Welcome to HydroScope
+          {Cookies.get('user_name') ? `Welcome back, ${Cookies.get('user_name')}!` : 'Welcome to HydroScope'}
         </h1>
         <h3
           className="font-heading text-xl md:text-3xl font-semibold text-navy leading-[1.15] mb-5"

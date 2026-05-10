@@ -144,7 +144,7 @@ export default function GramResultPopup({ data, onContinue, onDisagree, onReuplo
               </button>
               <button
                 onClick={onDisagree}
-                className="w-full border border-gray-200 text-navy rounded-xl py-2.5 font-body text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+                className="w-full border border-gray-300 text-navy rounded-xl py-2.5 font-body text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 I Disagree "Override Result"
               </button>
