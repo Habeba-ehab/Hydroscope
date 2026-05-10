@@ -1,5 +1,4 @@
 import api from '../../api/axios'
-import axios from 'axios'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   INITIAL_EDGES,
