@@ -26,7 +26,12 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // If the error is 401 or 403 (Not Authenticated) and we haven't retried yet
-    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+    // Skip refresh logic for the login endpoint itself
+    if (
+      (error.response?.status === 401 || error.response?.status === 403) &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/login')
+    ) {
       originalRequest._retry = true;
       const refreshToken = Cookies.get('refresh_token');
 
