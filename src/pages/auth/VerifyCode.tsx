@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { FiChevronLeft } from 'react-icons/fi';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
@@ -21,6 +21,8 @@ export default function VerifyCode() {
   const location = useLocation();
   const email = location.state?.email || '';
   const [isLoading, setIsLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const {
     register,
     handleSubmit,
@@ -33,11 +35,33 @@ export default function VerifyCode() {
     },
   });
 
+  const startCooldown = () => {
+    setResendCooldown(60);
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownRef.current!);
+          cooldownRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    startCooldown();
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, []);
+
   const handleResendCode = async () => {
-    if (!email) return;
+    if (!email || resendCooldown > 0) return;
     try {
       const response = await api.post(`/forgot-password?email=${email}`, {});
       toast.success(response.data.message || 'Verification code resent!');
+      startCooldown();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || error.response?.data?.message || 'Failed to resend code.');
     }
@@ -104,12 +128,13 @@ export default function VerifyCode() {
             <div className="text-left ml-1">
               <p className="text-xs text-gray-500">
                 Didn't get a code?{' '}
-                <button 
-                  type="button" 
-                  className="text-navy font-bold hover:text-lightnavy transition-colors cursor-pointer"
+                <button
+                  type="button"
+                  disabled={resendCooldown > 0}
+                  className="text-navy font-bold hover:text-lightnavy transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-navy"
                   onClick={handleResendCode}
                 >
-                  Resend
+                  {resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend'}
                 </button>
               </p>
             </div>
