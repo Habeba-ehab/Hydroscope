@@ -5,6 +5,7 @@ import Home        from './pages/home'
 import Analyze     from './pages/analyze'
 import AnalyzeTree from './pages/analyze-tree'
 import Guide       from './pages/guide'
+import Chat        from './pages/chat'
 import Navbar      from './components/Navbar'
 import Footer      from './components/Footer'
 import Login       from './pages/auth/Login'
@@ -36,6 +37,7 @@ function AppContent() {
   const isTree = pathname === '/analyze/tree'
   const authPaths = ['/login', '/signup', '/forgot-password', '/verify-code', '/reset-password'];
   const isAuth = authPaths.includes(pathname);
+  const isChat = pathname === '/chat';
 
   return (
     <div className="relative flex flex-col min-h-dvh">
@@ -48,11 +50,12 @@ function AppContent() {
           style={{ zIndex: 0, animation: 'fadeInUp 0.6s ease 0.1s both' }}
         />
       )}
-      {!isAuth && <Navbar />}
+      {!isAuth && !isChat && <Navbar />}
       <div className="flex-1 flex flex-col overflow-hidden" style={{ zIndex: 1 }}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={pathname}>
             <Route path="/guide"        element={<Guide />} />
+            <Route path="/chat"         element={<Chat />} />
 
             {/* Protected Routes - Only for logged-in users */}
             <Route element={<ProtectedRoute />}>
@@ -72,7 +75,7 @@ function AppContent() {
           </Routes>
         </AnimatePresence>
       </div>
-      {!isTree && !isAuth && <Footer />}
+      {!isTree && !isAuth && !isChat && <Footer />}
     </div>
   )
 }
