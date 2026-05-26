@@ -83,7 +83,11 @@ export default function SignUp() {
       toast.success('Registration successful! Please login.');
       navigate('/login');
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || error.response?.data?.message || 'Failed to register. Please try again.');
+      const detail = error.response?.data?.detail;
+      const message = Array.isArray(detail)
+        ? detail.map((d: any) => d.msg).join(', ')
+        : detail || error.response?.data?.message || 'Failed to register. Please try again.';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

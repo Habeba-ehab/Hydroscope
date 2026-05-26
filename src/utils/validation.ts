@@ -8,7 +8,7 @@ export interface PasswordValidation {
 
 export function validatePassword(password: string): PasswordValidation {
   const hasCapital = /[A-Z]/.test(password);
-  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+  const hasSpecial = /[!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   const hasMinLength = password.length >= 8;
 
