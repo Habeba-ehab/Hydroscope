@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
@@ -47,6 +47,13 @@ function AppContent() {
   const authPaths = ['/login', '/signup', '/forgot-password', '/verify-code', '/reset-password'];
   const isAuth = authPaths.includes(pathname);
   const isChat = pathname === '/chat';
+  const [showChatHint, setShowChatHint] = useState(false)
+
+  useEffect(() => {
+    if (isAuth || isChat) return
+    const t = setTimeout(() => setShowChatHint(true), 3000)
+    return () => clearTimeout(t)
+  }, [isAuth, isChat])
 
   return (
     <div className="relative flex flex-col min-h-dvh">
@@ -88,13 +95,31 @@ function AppContent() {
       </div>
       {!isTree && !isAuth && !isChat && <Footer />}
       {!isChat && !isAuth && (
-        <Link
-          to="/chat"
-          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-br from-[#1a3a5c] to-[#1a6c8c] text-white shadow-lg hover:scale-110 transition-all duration-200"
-          aria-label="Open chat"
-        >
-          <Bot size={26} />
-        </Link>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+          <AnimatePresence>
+            {showChatHint && (
+              <motion.button
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setShowChatHint(false)}
+                className="relative bg-linear-to-br from-[#1a3a5c] to-[#1a6c8c] text-white text-xs font-medium px-3.5 py-2 rounded-2xl shadow-lg max-w-45 text-left leading-snug cursor-pointer"
+              >
+                Need help? Chat with our AI assistant!
+                <span className="block text-[10px] text-white/60 mt-0.5">Tap to dismiss</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
+          <Link
+            to="/chat"
+            onClick={() => setShowChatHint(false)}
+            className="flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-br from-[#1a3a5c] to-[#1a6c8c] text-white shadow-lg hover:scale-110 transition-all duration-200"
+            aria-label="Open chat"
+          >
+            <Bot size={26} />
+          </Link>
+        </div>
       )}
     </div>
   )

@@ -27,10 +27,13 @@ export default function Navbar() {
     navigate('/login')
   }
 
+  const activeNavState: string | undefined = (location.state as any)?.activeNav
+
   useEffect(() => {
-    const activeIndex = links.findIndex(link =>
-      link.end ? location.pathname === link.to : location.pathname.startsWith(link.to)
-    )
+    const activeIndex = links.findIndex(link => {
+      if (activeNavState) return link.to === activeNavState
+      return link.end ? location.pathname === link.to : location.pathname.startsWith(link.to)
+    })
     const activeEl = linkRefs.current[activeIndex]
     const containerEl = containerRef.current
     if (activeEl && containerEl) {
@@ -42,7 +45,7 @@ export default function Navbar() {
         ready: true,
       })
     }
-  }, [location.pathname])
+  }, [location.pathname, activeNavState])
 
   // Close drawer on route change
   useEffect(() => {
@@ -82,11 +85,12 @@ export default function Navbar() {
                 to={link.to}
                 end={link.end}
                 ref={(el: HTMLAnchorElement | null) => { linkRefs.current[i] = el }}
-                className={({ isActive }) =>
-                  `relative z-10 px-5 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${
-                    isActive ? 'text-white' : 'text-gray-500 hover:text-gray-800'
+                className={({ isActive }) => {
+                  const effectivelyActive = isActive || activeNavState === link.to
+                  return `relative z-10 px-5 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${
+                    effectivelyActive ? 'text-white' : 'text-gray-500 hover:text-gray-800'
                   }`
-                }
+                }}
               >
                 {link.label}
               </NavLink>
@@ -150,11 +154,12 @@ export default function Navbar() {
               key={link.to}
               to={link.to}
               end={link.end}
-              className={({ isActive }) =>
-                `py-3.5 px-4 rounded-xl text-sm font-medium transition-colors uppercase tracking-wide ${
-                  isActive ? 'bg-navy/5 text-navy font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-navy'
+              className={({ isActive }) => {
+                const effectivelyActive = isActive || activeNavState === link.to
+                return `py-3.5 px-4 rounded-xl text-sm font-medium transition-colors uppercase tracking-wide ${
+                  effectivelyActive ? 'bg-navy/5 text-navy font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-navy'
                 }`
-              }
+              }}
             >
               {link.label}
             </NavLink>

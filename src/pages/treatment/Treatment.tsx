@@ -141,7 +141,7 @@ export default function Treatment() {
           className="flex items-center text-lightnavy hover:text-navy transition-colors mb-6 group text-sm font-medium cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-          Back to Results
+          Back
         </button>
 
         {/* Hero Header */}

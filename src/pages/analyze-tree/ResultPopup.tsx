@@ -276,7 +276,7 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
           </button>
           {isSupported && (
             <button
-              onClick={() => navigate(`/treatment?bacteria=${encodeURIComponent(result.bacteriaName)}`)}
+              onClick={() => navigate(`/treatment?bacteria=${encodeURIComponent(result.bacteriaName)}`, { state: { activeNav: '/analyze' } })}
               className="bg-navy text-white rounded-full px-8 py-2.5 font-body text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
             >
               View Treatment

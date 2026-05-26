@@ -138,7 +138,7 @@ export default function WaterSafetyInfo() {
 
                 {/* CTA */}
                 <button
-                  onClick={() => navigate(`/treatment?bacteria=${encodeURIComponent(b.fullName)}`)}
+                  onClick={() => navigate(`/treatment?bacteria=${encodeURIComponent(b.fullName)}`, { state: { activeNav: '/guide' } })}
                   className="w-full flex items-center justify-center gap-2 bg-[#1a6c8c] hover:bg-[#155a75] text-white rounded-xl px-4 py-2.5 font-body text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <FlaskConical className="w-3.5 h-3.5" />

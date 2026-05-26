@@ -5,7 +5,7 @@ export default function Analyze() {
   const navigate = useNavigate()
 
   return (
-    <main className="h-[calc(100dvh-5rem)] flex items-center justify-center overflow-y-auto">
+    <main className="min-h-[calc(100dvh-5rem)] flex items-center justify-center py-8">
       <Upload onAnalyze={() => navigate('/analyze/tree')} />
     </main>
   )
