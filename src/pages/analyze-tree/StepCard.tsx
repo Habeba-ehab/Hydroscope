@@ -182,52 +182,6 @@ export default function StepCard({ card, onPick, onBack, canGoBack, compact }: P
           </button>
         ))}
       </div>
-
-      {/* Image upload — catalase step only */}
-      {isCatalase && (
-        <>
-          <div className="flex items-center gap-2 my-1">
-            <div className="h-px flex-1 bg-lightnavy/30" />
-            <p className="font-body text-[10px] font-semibold text-lightnavy uppercase tracking-wider">
-              or upload image
-            </p>
-            <div className="h-px flex-1 bg-lightnavy/30" />
-          </div>
-
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-
-          {preview && (
-            <div className="flex items-center gap-2 mb-1">
-              <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-navy/10 shrink-0">
-                <img src={preview} alt="Test result" className="w-full h-full object-cover" />
-              </div>
-              {analyzing && (
-                <div className="flex items-center gap-1">
-                  {[0,1,2].map(i => (
-                    <div key={i} className="w-1 h-1 rounded-full bg-navy"
-                      style={{ animation: 'blink 1.2s ease infinite', animationDelay: `${i * 0.22}s` }} />
-                  ))}
-                  <p className="font-body text-[10px] text-lightnavy ml-0.5">AI analyzing…</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="w-full flex items-center justify-center gap-1.5 border border-dashed border-navy/30 rounded-xl py-2 text-navy hover:border-navy/60 hover:bg-navy/5 transition-all duration-200 cursor-pointer"
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span className="font-body text-xs font-medium">
-              {preview ? 'Change image' : 'Upload test image'}
-            </span>
-          </button>
-        </>
-      )}
     </>
   )
 }

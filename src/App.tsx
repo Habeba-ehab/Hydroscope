@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
+import { Bot } from 'lucide-react'
 import Home        from './pages/home'
 import Analyze     from './pages/analyze'
 import AnalyzeTree from './pages/analyze-tree'
@@ -15,6 +17,7 @@ import VerifyCode from './pages/auth/VerifyCode'
 import ResetPassword from './pages/auth/ResetPassword'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
+import Treatment from './pages/treatment/Treatment'
 
 function LoginTransition({ children }: { children: React.ReactNode }) {
   return (
@@ -31,6 +34,12 @@ function LoginTransition({ children }: { children: React.ReactNode }) {
 }
 
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
+
 function AppContent() {
   const location = useLocation()
   const { pathname } = location
@@ -41,6 +50,7 @@ function AppContent() {
 
   return (
     <div className="relative flex flex-col min-h-dvh">
+      <ScrollToTop />
       <Toaster position="top-right" />
       {pathname === '/' && (
         <img
@@ -62,6 +72,7 @@ function AppContent() {
               <Route path="/"             element={<Home />} />
               <Route path="/analyze"      element={<Analyze />} />
               <Route path="/analyze/tree" element={<AnalyzeTree />} />
+              <Route path="/treatment"    element={<Treatment />} />
             </Route>
 
             {/* Public Auth Routes - Only for logged-out users */}
@@ -76,6 +87,15 @@ function AppContent() {
         </AnimatePresence>
       </div>
       {!isTree && !isAuth && !isChat && <Footer />}
+      {!isChat && !isAuth && (
+        <Link
+          to="/chat"
+          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-br from-[#1a3a5c] to-[#1a6c8c] text-white shadow-lg hover:scale-110 transition-all duration-200"
+          aria-label="Open chat"
+        >
+          <Bot size={26} />
+        </Link>
+      )}
     </div>
   )
 }

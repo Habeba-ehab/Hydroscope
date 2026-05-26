@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const ProtectedRoute = () => {
-  const token = Cookies.get('access_token');
+  const token = Cookies.get('access_token') || Cookies.get('refresh_token');
 
   // If no token exists, redirect to login
   if (!token) {

@@ -364,7 +364,7 @@ export const RESULT_MAP: Record<string, BacteriaResult> = {
   },
   vibrio: {
     nodeId: 'vibrio',
-    bacteriaName: 'Vibrio spp.',
+    bacteriaName: 'Vibrio cholerae',
     confidence: 92,
     description:
       'Gram-negative curved rods. Oxidase positive, grows well on TCBS agar producing yellow sucrose-fermenting colonies. Associated with seafood-borne gastroenteritis and wound infections.',
@@ -412,7 +412,7 @@ export const RESULT_MAP: Record<string, BacteriaResult> = {
   },
   enterobacter: {
     nodeId: 'enterobacter',
-    bacteriaName: 'Enterobacter spp.',
+    bacteriaName: 'Enterobacter',
     confidence: 91,
     description:
       'Gram-negative rod. Opportunistic environmental pathogen. IMViC pattern −−++ distinguishes it from E. coli. Often associated with hospital-acquired infections and has emerging carbapenem resistance.',
@@ -424,7 +424,7 @@ export const RESULT_MAP: Record<string, BacteriaResult> = {
   },
   salmonella: {
     nodeId: 'salmonella',
-    bacteriaName: 'Salmonella spp.',
+    bacteriaName: 'Salmonella',
     confidence: 94,
     description:
       'Gram-negative rod. Colorless on MacConkey (non-lactose fermenter). TSI shows alkaline slant / acid butt with H₂S black precipitate. A major cause of foodborne gastroenteritis and typhoid fever.',

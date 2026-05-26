@@ -30,7 +30,8 @@ api.interceptors.response.use(
     if (
       (error.response?.status === 401 || error.response?.status === 403) &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes('/login')
+      !originalRequest.url?.includes('/login') &&
+      !originalRequest.url?.includes('/register')
     ) {
       originalRequest._retry = true;
       const refreshToken = Cookies.get('refresh_token');
@@ -39,7 +40,8 @@ api.interceptors.response.use(
         try {
           // Final format: FastAPI expects a query parameter named 'token'
           const response = await axios.post(`${API_BASE_URL}/refresh-token`, null, {
-            params: { token: refreshToken }
+            params: { token: refreshToken },
+            withCredentials: true,
           });
           
           const { access_token, refresh_token: newRefreshToken } = response.data;
@@ -52,7 +54,7 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return api(originalRequest);
         } catch (refreshError: any) {
-          // If refresh fails, log the user out
+          console.error('[Auth] Refresh token failed:', refreshError.response?.status, refreshError.response?.data);
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           Cookies.remove('user_name');

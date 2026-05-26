@@ -54,6 +54,7 @@ export default function Upload({ onAnalyze }: Props) {
     setFileName(null)
     setPreview(null)
     sessionStorage.removeItem(SESSION_KEY)
+    sessionStorage.removeItem('treeState')
     if (inputRef.current) inputRef.current.value = ''
   }
 
@@ -108,7 +109,7 @@ export default function Upload({ onAnalyze }: Props) {
                 Remove
               </button>
               <button
-                onClick={e => { e.stopPropagation(); onAnalyze() }}
+                onClick={e => { e.stopPropagation(); sessionStorage.removeItem('treeState'); onAnalyze() }}
                 className="font-body text-sm font-medium text-white bg-navy rounded-full px-5 py-2 hover:opacity-90 transition-opacity cursor-pointer"
               >
                 Start Analysis

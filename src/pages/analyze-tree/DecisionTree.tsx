@@ -302,6 +302,45 @@ export default function DecisionTree({ onBack }: Props) {
   // ── Mount: show gram_stain → AI auto-decides ─────────────────────────────
   useEffect(() => {
     let alive = true
+    
+    // Check for saved state (e.g. coming back from Treatment page)
+    const savedState = sessionStorage.getItem('treeState')
+    if (savedState) {
+      try {
+        const st = JSON.parse(savedState)
+        
+        // Only restore if the user has actually progressed past the initial AI loading state
+        if (st.activeId && st.activeId !== 'gram_stain') {
+          setNodes(st.nodes)
+          setEdges(st.edges)
+          setActiveId(st.activeId)
+          activeIdRef.current = st.activeId
+          activePathRef.current = st.activePath
+          activeEPathRef.current = st.activeEPath
+
+          // Restore the viewBox instantly — no pan animation
+          if (st.viewBox) {
+            const vb = st.viewBox as ViewBox
+            vbNow.current = vb
+            vbTgt.current = vb
+            setViewBox(vb)
+          }
+
+          if (RESULT_NODE_IDS.has(st.activeId)) {
+            setResult(RESULT_MAP[st.activeId])
+            setShowResult(true)
+          }
+          return
+        } else {
+          // If the saved state is just the starting point, clear it and let AI run normally
+          sessionStorage.removeItem('treeState')
+        }
+      } catch (e) {
+        console.error("Failed to restore tree state", e)
+        sessionStorage.removeItem('treeState')
+      }
+    }
+
     const gramNode = INITIAL_NODES.find(n => n.id === 'gram_stain')!
 
     setNodes(prev => prev.map(n => n.id === 'gram_stain' ? { ...n, status: 'active' } : n))
@@ -390,6 +429,20 @@ export default function DecisionTree({ onBack }: Props) {
     }
   }, []) // runs once on mount
 
+  // ── Save state on change ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (activeIdRef.current && nodes.some(n => n.status !== 'idle')) {
+      sessionStorage.setItem('treeState', JSON.stringify({
+        nodes,
+        edges,
+        activeId: activeIdRef.current,
+        activePath: activePathRef.current,
+        activeEPath: activeEPathRef.current,
+        viewBox: vbNow.current
+      }))
+    }
+  }, [nodes, edges, viewBox])
+
   // ── Derived values ───────────────────────────────────────────────────────
   const activeNode = activeId ? INITIAL_NODES.find(n => n.id === activeId)! : null
 
@@ -416,7 +469,7 @@ export default function DecisionTree({ onBack }: Props) {
 
       {/* Back arrow */}
       <button
-        onClick={onBack}
+        onClick={() => { sessionStorage.removeItem('treeState'); onBack() }}
         className="absolute top-4 left-4 z-30 flex items-center gap-1.5 bg-white/90 backdrop-blur border border-gray-200 rounded-full pl-3 pr-4 py-2 font-body text-sm font-medium text-navy shadow-sm hover:shadow-md hover:bg-navy/10 transition-all cursor-pointer"
         style={{ animation: 'fadeInLeft 0.4s ease both' }}
       >
@@ -462,7 +515,7 @@ export default function DecisionTree({ onBack }: Props) {
 
       {/* Result overlay */}
       {showResult && result && (
-        <ResultPopup result={result} nodes={nodes} edges={edges} onBack={() => { sessionStorage.removeItem('analyzeImage'); onBack() }} />
+        <ResultPopup result={result} nodes={nodes} edges={edges} onBack={() => { sessionStorage.removeItem('analyzeImage'); sessionStorage.removeItem('treeState'); onBack() }} />
       )}
 
       {/* Not a gram stain error overlay */}
@@ -481,7 +534,7 @@ export default function DecisionTree({ onBack }: Props) {
               We couldn't detect a valid gram-stained slide in your image. Please upload a clear microscope slide image and try again.
             </p>
             <button
-              onClick={() => { sessionStorage.removeItem('analyzeImage'); onBack() }}
+              onClick={() => { sessionStorage.removeItem('analyzeImage'); sessionStorage.removeItem('treeState'); onBack() }}
               className="font-body text-sm font-medium text-white bg-navy rounded-full px-6 py-2.5 hover:opacity-90 transition-opacity cursor-pointer"
             >
               Upload Another Image

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, ArrowLeft, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,7 @@ interface Message {
 }
 
 export default function Chat() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = sessionStorage.getItem('hydroscope_chat_history');
     if (saved) {
@@ -114,9 +115,9 @@ export default function Chat() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <Link to="/" className="-ml-2 p-2 hover:bg-slate-100 rounded-full transition-colors">
+          <button onClick={() => navigate(-1)} className="-ml-2 p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
             <ArrowLeft className="w-5 h-5 text-navy" />
-          </Link>
+          </button>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-navy flex items-center justify-center shadow-md">
               <Bot className="w-6 h-6 text-white" />

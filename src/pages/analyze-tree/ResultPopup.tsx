@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { LuDownload } from 'react-icons/lu'
+import { useNavigate } from 'react-router-dom'
 import { INITIAL_EDGES, INITIAL_NODES } from './treeData'
 import { NH, NW, makeEdgePath, edgeMidpoint } from './helpers'
 import type { BacteriaResult, TreeEdge, TreeNode } from './types'
@@ -117,6 +118,17 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [lightbox, setLightbox] = useState<'image' | 'tree' | null>(null)
   const treeRef = useRef<SVGSVGElement>(null)
+  const navigate = useNavigate()
+
+  const supportedBacteria = [
+    'Pseudomonas aeruginosa',
+    'Vibrio cholerae',
+    'Salmonella',
+    'Escherichia coli',
+    'Klebsiella pneumoniae',
+    'Enterobacter'
+  ]
+  const isSupported = supportedBacteria.includes(result.bacteriaName)
 
   useEffect(() => {
     setUploadedImage(sessionStorage.getItem('analyzeImage'))
@@ -255,13 +267,21 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
         </p>
 
         {/* CTA */}
-        <div className="flex justify-center">
-        <button
-          onClick={onBack}
-          className="bg-navy text-white rounded-full px-8 py-2.5 font-body text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
-        >
-          Try Another Sample
-        </button>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onBack}
+            className="bg-white border-2 border-navy text-navy rounded-full px-8 py-2.5 font-body text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            Try Another Sample
+          </button>
+          {isSupported && (
+            <button
+              onClick={() => navigate(`/treatment?bacteria=${encodeURIComponent(result.bacteriaName)}`)}
+              className="bg-navy text-white rounded-full px-8 py-2.5 font-body text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+            >
+              View Treatment
+            </button>
+          )}
         </div>
 
       </div>
