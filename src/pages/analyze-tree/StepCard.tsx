@@ -1,4 +1,3 @@
-import { useRef, useState } from 'react'
 import type { StepCard as StepCardData } from './types'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -14,22 +13,6 @@ interface Props {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function StepCard({ card, onPick, onBack, canGoBack, compact }: Props) {
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [preview,   setPreview  ] = useState<string | null>(null)
-  const [analyzing, setAnalyzing] = useState(false)
-
-  const isCatalase = card.nodeId === 'catalase'
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setPreview(URL.createObjectURL(file))
-    setAnalyzing(true)
-    setTimeout(() => {
-      const picked = card.options[Math.floor(Math.random() * card.options.length)]
-      onPick(picked.edgeId, picked.targetNodeId)
-    }, 2500)
-  }
 
   if (compact) {
     return (
@@ -74,40 +57,6 @@ export default function StepCard({ card, onPick, onBack, canGoBack, compact }: P
           ))}
         </div>
 
-        {/* Upload — catalase only */}
-        {isCatalase && (
-          <>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-            {preview && (
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <div className="w-8 h-8 rounded-md overflow-hidden border border-navy/10 shrink-0">
-                  <img src={preview} alt="" className="w-full h-full object-cover" />
-                </div>
-                {analyzing && (
-                  <div className="flex items-center gap-0.5">
-                    {[0,1,2].map(i => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-navy"
-                        style={{ animation: 'blink 1.2s ease infinite', animationDelay: `${i * 0.22}s` }} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="mt-1.5 w-full flex items-center justify-center gap-1 border border-dashed border-navy/30 rounded-lg py-1.5 text-navy hover:border-navy/60 hover:bg-navy/5 transition-all cursor-pointer"
-            >
-              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span className="font-body text-[10px] font-medium">
-                {preview ? 'Change' : 'Upload image'}
-              </span>
-            </button>
-          </>
-        )}
       </>
     )
   }

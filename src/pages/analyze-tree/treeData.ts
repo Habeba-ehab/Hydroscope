@@ -383,7 +383,7 @@ export const RESULT_MAP: Record<string, BacteriaResult> = {
     badges: [
       { label: 'Gram −ve',      colour: 'bg-pink-100 text-pink-700   border border-pink-200'   },
       { label: 'Oxidase +ve',   colour: 'bg-green-100 text-green-700 border border-green-200'  },
-      { label: 'Non-fermenter', colour: 'bg-gray-100  text-gray-700  border border-gray-200'   },
+      { label: 'Blue-green pigment', colour: 'bg-teal-100 text-teal-700 border border-teal-200' },
     ],
   },
   klebsiella: {

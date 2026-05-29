@@ -14,7 +14,7 @@ const bacteria = [
     shortName: 'Vibrio',
     fullName: 'Vibrio cholerae',
     gramType: 'Negative',
-    morphology: 'Comma-shaped',
+    morphology: 'Curved rod',
     description:
       'Severe diarrheal disease leading to rapid dehydration and death if untreated. Vibrio cholerae serogroups O1 and O139 are responsible for millions of cases and tens of thousands of deaths annually. Cholera outbreaks have surged in recent years, driven by climate change and conflicts, with cases emerging in countries where it was previously not present.',
   },
