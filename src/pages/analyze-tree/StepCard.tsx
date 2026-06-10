@@ -131,7 +131,7 @@ export default function StepCard({ card, onPick, onBack, canGoBack, compact }: P
 
       {/* Observation options */}
       <div className="flex flex-col gap-2">
-        {card.options.map(opt => (
+        {card.options.map(opt => ( 
           <button
             key={opt.edgeId}
             onClick={() => handlePick(opt)}
