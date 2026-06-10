@@ -8,6 +8,7 @@ const links = [
   { to: '/', label: 'Home', end: true },
   { to: '/analyze', label: 'Analyze' },
   { to: '/guide', label: 'Guide' },
+  { to: '/history', label: 'History' },
 ]
 
 export default function Navbar() {
@@ -70,12 +71,10 @@ export default function Navbar() {
           <div ref={containerRef} className="relative hidden md:flex items-center border border-gray-400 rounded-full p-1 gap-1">
             {/* Sliding indicator */}
             <div
-              className="absolute bg-navy rounded-full"
+              className="absolute bg-navy rounded-full inset-y-1"
               style={{
                 left: indicator.left,
                 width: indicator.width,
-                top: 4,
-                bottom: 4,
                 transition: indicator.ready ? 'left 0.3s ease, width 0.3s ease' : 'none',
               }}
             />

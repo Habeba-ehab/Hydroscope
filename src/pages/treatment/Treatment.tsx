@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
-import { Loader2, ArrowLeft, ShieldAlert, Target, Activity } from 'lucide-react';
+import { ArrowLeft, ShieldAlert, Target, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Bacteria {
@@ -76,6 +76,7 @@ export default function Treatment() {
 
         // Step 2: Get full data
         const fullRes = await api.get(`/api/bacteria/${target.id}/full`);
+        console.log('Treatment API response:', fullRes.data);
         setData(fullRes.data);
       } catch (err: any) {
         console.error(err);
@@ -90,9 +91,56 @@ export default function Treatment() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
-        <Loader2 className="w-12 h-12 text-navy animate-spin mb-4" />
-        <p className="text-lightnavy font-body font-medium animate-pulse">Loading treatment protocols...</p>
+      <div className="flex-1 bg-gray-50/80">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 animate-pulse">
+          <div className="h-4 w-12 bg-gray-200 rounded mb-6" />
+          <div className="bg-gray-200 rounded-3xl h-36 mb-10" />
+          <div className="mb-10">
+            <div className="h-7 w-72 bg-gray-200 rounded mb-6" />
+            <div className="bg-sky-50/50 rounded-3xl border border-sky-100 p-6 sm:p-8 space-y-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex gap-6 items-start">
+                  <div className="w-9 h-9 rounded-full bg-gray-200 shrink-0" />
+                  <div className="flex-1 rounded-2xl bg-white border border-gray-100 p-5 space-y-3">
+                    <div className="h-5 w-48 bg-gray-200 rounded" />
+                    <div className="h-3 w-full bg-gray-200 rounded" />
+                    <div className="h-3 w-4/5 bg-gray-200 rounded" />
+                    <div className="flex gap-2">
+                      <div className="h-7 w-28 bg-gray-200 rounded-lg" />
+                      <div className="h-7 w-36 bg-gray-200 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <div className="h-7 w-56 bg-gray-200 rounded mb-6" />
+              <div className="space-y-5">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="rounded-3xl bg-indigo-50/40 border border-indigo-100/60 p-6 space-y-3">
+                    <div className="h-6 w-40 bg-gray-200 rounded" />
+                    <div className="h-3 w-full bg-gray-200 rounded" />
+                    <div className="h-3 w-3/4 bg-gray-200 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="h-7 w-56 bg-gray-200 rounded mb-6" />
+              <div className="bg-rose-50/30 rounded-3xl border border-rose-100 p-6 space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl bg-white border border-rose-100/60 p-5 space-y-2">
+                    <div className="h-5 w-36 bg-gray-200 rounded" />
+                    <div className="h-3 w-full bg-gray-200 rounded" />
+                    <div className="h-3 w-2/3 bg-gray-200 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

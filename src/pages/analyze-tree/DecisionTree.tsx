@@ -398,6 +398,12 @@ export default function DecisionTree({ onBack }: Props) {
       if (apiResult === null) {
         // fallback: no API data, go random without popup
         const positive    = Math.random() > 0.5
+        sessionStorage.setItem('gramSession', JSON.stringify({
+          gramResult: positive ? 'gram_positive' : 'gram_negative',
+          gramConfidence: 50,
+          sampleImageUrl: '',
+          overridden: false,
+        }))
         const edgeId      = positive ? 'e_gram_catalase' : 'e_gram_oxidase'
         const targetId    = positive ? 'catalase'        : 'oxidase'
         const otherEdgeId = positive ? 'e_gram_oxidase'  : 'e_gram_catalase'
@@ -507,8 +513,24 @@ export default function DecisionTree({ onBack }: Props) {
       {gramPopup && (
         <GramResultPopup
           data={gramPopup.data}
-          onContinue={() => proceedWithGram(gramPopup.positive)}
-          onDisagree={() => proceedWithGram(!gramPopup.positive)}
+          onContinue={() => {
+            sessionStorage.setItem('gramSession', JSON.stringify({
+              gramResult: gramPopup.data.prediction,
+              gramConfidence: gramPopup.data.confidence,
+              sampleImageUrl: gramPopup.data.sample_image_url ?? '',
+              overridden: false,
+            }))
+            proceedWithGram(gramPopup.positive)
+          }}
+          onDisagree={() => {
+            sessionStorage.setItem('gramSession', JSON.stringify({
+              gramResult: gramPopup.data.prediction,
+              gramConfidence: gramPopup.data.confidence,
+              sampleImageUrl: gramPopup.data.sample_image_url ?? '',
+              overridden: true,
+            }))
+            proceedWithGram(!gramPopup.positive)
+          }}
           onReupload={() => { sessionStorage.removeItem('analyzeImage'); onBack() }}
         />
       )}

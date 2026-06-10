@@ -1,4 +1,5 @@
-import type { StepCard as StepCardData } from './types'
+import { useState } from 'react'
+import type { StepCard as StepCardData, StepOption } from './types'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,16 @@ interface Props {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function StepCard({ card, onPick, onBack, canGoBack, compact }: Props) {
+
+  // Track which option the user picked so its radio circle fills in
+  // before the card transitions away.
+  const [selected, setSelected] = useState<string | null>(null)
+
+  const handlePick = (opt: StepOption) => {
+    if (selected) return
+    setSelected(opt.edgeId)
+    setTimeout(() => onPick(opt.edgeId, opt.targetNodeId), 200)
+  }
 
   if (compact) {
     return (
@@ -47,9 +58,15 @@ export default function StepCard({ card, onPick, onBack, canGoBack, compact }: P
           {card.options.map(opt => (
             <button
               key={opt.edgeId}
-              onClick={() => onPick(opt.edgeId, opt.targetNodeId)}
-              className="text-left bg-white rounded-lg px-2 py-1.5 hover:bg-navy/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              onClick={() => handlePick(opt)}
+              disabled={selected !== null}
+              className={`flex items-center gap-2 text-left bg-white rounded-lg px-2 py-1.5 hover:bg-navy/20 active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:cursor-default ${selected && selected !== opt.edgeId ? 'opacity-40' : ''}`}
             >
+              <span className={`shrink-0 flex items-center justify-center w-3 h-3 rounded-full border-2 transition-colors duration-150 ${selected === opt.edgeId ? 'border-navy' : 'border-lightnavy'}`}>
+                {selected === opt.edgeId && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-navy" />
+                )}
+              </span>
               <p className="font-body text-[10px] font-semibold text-navy leading-snug">
                 {opt.label}
               </p>
@@ -117,17 +134,25 @@ export default function StepCard({ card, onPick, onBack, canGoBack, compact }: P
         {card.options.map(opt => (
           <button
             key={opt.edgeId}
-            onClick={() => onPick(opt.edgeId, opt.targetNodeId)}
-            className="text-left bg-white rounded-xl px-3.5 py-3 hover:bg-navy/20 active:scale-[0.98] transition-all duration-200 cursor-pointer group"
+            onClick={() => handlePick(opt)}
+            disabled={selected !== null}
+            className={`flex items-start gap-3 text-left bg-white rounded-xl px-3.5 py-3 hover:bg-navy/20 active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:cursor-default group ${selected && selected !== opt.edgeId ? 'opacity-40' : ''}`}
           >
-            <p className="font-body text-xs font-semibold text-navy leading-snug">
-              {opt.label}
-            </p>
-            {opt.description && (
-              <p className="font-body text-xs text-lightnavy mt-0.5 leading-snug">
-                {opt.description}
+            <span className={`shrink-0 flex items-center justify-center mt-0.5 w-4 h-4 rounded-full border-2 transition-colors duration-150 ${selected === opt.edgeId ? 'border-navy' : 'border-lightnavy'}`}>
+              {selected === opt.edgeId && (
+                <span className="w-2 h-2 rounded-full bg-navy" />
+              )}
+            </span>
+            <div>
+              <p className="font-body text-xs font-semibold text-navy leading-snug">
+                {opt.label}
               </p>
-            )}
+              {opt.description && (
+                <p className="font-body text-xs text-lightnavy mt-0.5 leading-snug">
+                  {opt.description}
+                </p>
+              )}
+            </div>
           </button>
         ))}
       </div>

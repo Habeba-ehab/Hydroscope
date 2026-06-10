@@ -14,6 +14,7 @@ export interface GramApiResult {
   message: string
   is_confident?: boolean
   warning?: string | null
+  sample_image_url?: string
 }
 
 interface Props {

@@ -18,6 +18,8 @@ import ResetPassword from './pages/auth/ResetPassword'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
 import Treatment from './pages/treatment/Treatment'
+import History from './pages/history'
+import HistoryDetail from './pages/history/HistoryDetail'
 
 function LoginTransition({ children }: { children: React.ReactNode }) {
   return (
@@ -80,6 +82,8 @@ function AppContent() {
               <Route path="/analyze"      element={<Analyze />} />
               <Route path="/analyze/tree" element={<AnalyzeTree />} />
               <Route path="/treatment"    element={<Treatment />} />
+              <Route path="/history"      element={<History />} />
+              <Route path="/history/:id"  element={<HistoryDetail />} />
             </Route>
 
             {/* Public Auth Routes - Only for logged-out users */}

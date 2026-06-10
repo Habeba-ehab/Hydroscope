@@ -5,6 +5,16 @@ import { useNavigate } from 'react-router-dom'
 import { INITIAL_EDGES, INITIAL_NODES } from './treeData'
 import { NH, NW, makeEdgePath, edgeMidpoint } from './helpers'
 import type { BacteriaResult, TreeEdge, TreeNode } from './types'
+import { saveSession } from '../../api/history'
+
+const BACTERIA_ID_MAP: Record<string, number> = {
+  'Pseudomonas aeruginosa': 1,
+  'Vibrio cholerae':        2,
+  'Salmonella':             3,
+  'Escherichia coli':       4,
+  'Klebsiella pneumoniae':  5,
+  'Enterobacter':           6,
+}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -133,6 +143,34 @@ export default function ResultPopup({ result, nodes, edges, onBack }: Props) {
   useEffect(() => {
     setUploadedImage(sessionStorage.getItem('analyzeImage'))
   }, [])
+
+  // Save session to backend once when the result is first shown.
+  // gramSession is written by DecisionTree right before this popup mounts.
+  useEffect(() => {
+    const raw = sessionStorage.getItem('gramSession')
+    if (!raw) return
+    sessionStorage.removeItem('gramSession') // prevent duplicate saves on restore
+
+    try {
+      const gs = JSON.parse(raw)
+      let svgContent = ''
+      if (treeRef.current) {
+        try { svgContent = new XMLSerializer().serializeToString(treeRef.current) } catch { /* ignore */ }
+      }
+      saveSession({
+        gram_result:         gs.gramResult,
+        gram_confidence:     `${Number(gs.gramConfidence).toFixed(1)}%`,
+        final_bacteria_name: result.bacteriaName,
+        final_bacteria_id:   BACTERIA_ID_MAP[result.bacteriaName] ?? null,
+        biochemical_tags:    result.badges.map((b: { label: string }) => b.label).join(','),
+        overridden:          gs.overridden,
+        sample_image_url:    gs.sampleImageUrl ?? '',
+        svg_content:         svgContent,
+      }).catch(err => console.error('[History] Failed to save session', err))
+    } catch (e) {
+      console.error('[History] Failed to prepare session payload', e)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDownloadPath = (e: React.MouseEvent) => {
     e.stopPropagation()
