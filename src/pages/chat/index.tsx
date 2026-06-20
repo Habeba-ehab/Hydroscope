@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, ArrowLeft, Loader2, History, Clock, Plus, X, FileText, Trash2 } from 'lucide-react';
+import { Send, Bot, User, ArrowLeft, Loader2, History, Clock, Plus, X, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import api from '../../api/axios';
@@ -44,12 +44,9 @@ function DeleteModal({ session, deleting, onConfirm, onCancel }: DeleteModalProp
         className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm"
         onClick={e => e.stopPropagation()}
       >
-        {/* Icon */}
         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-red-50 mx-auto mb-4">
           <Trash2 className="w-5 h-5 text-red-500" />
         </div>
-
-        {/* Text */}
         <h3 className="font-heading text-lg font-bold text-navy text-center mb-1">
           Delete Conversation?
         </h3>
@@ -59,8 +56,6 @@ function DeleteModal({ session, deleting, onConfirm, onCancel }: DeleteModalProp
           </span>{' '}
           will be permanently removed and cannot be recovered.
         </p>
-
-        {/* Buttons */}
         <div className="flex gap-3">
           <button
             onClick={onCancel}
@@ -115,8 +110,6 @@ function parseArrayOfMessagesOrQAs(arr: any[]): Message[] {
           id: `a-${index}-${Date.now()}`,
           role: 'assistant',
           content: item.answer,
-          sources: Array.isArray(item.sources) ? item.sources : [],
-          confidence: item.confidence || '',
           timestamp: item.created_at ? new Date(item.created_at) : new Date(),
         });
       }
@@ -127,13 +120,11 @@ function parseArrayOfMessagesOrQAs(arr: any[]): Message[] {
         id: item.id?.toString() || `msg-${index}-${Date.now()}`,
         role,
         content,
-        sources: Array.isArray(item.sources) ? item.sources : [],
-        confidence: item.confidence || '',
         timestamp: item.timestamp
           ? new Date(item.timestamp)
           : item.created_at
-          ? new Date(item.created_at)
-          : new Date(),
+            ? new Date(item.created_at)
+            : new Date(),
       });
     }
   });
@@ -170,7 +161,6 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Delete modal state
   const [confirmSession, setConfirmSession] = useState<ChatSession | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -264,27 +254,23 @@ export default function Chat() {
     toast.success('Started a new conversation');
   };
 
-  // Opens the modal instead of window.confirm
   const handleDeleteClick = (e: React.MouseEvent, session: ChatSession) => {
     e.stopPropagation();
     setConfirmSession(session);
   };
 
-  // Called when the user confirms deletion inside the modal
   const handleConfirmDelete = async () => {
     if (!confirmSession) return;
     setDeletingId(confirmSession.id);
     try {
       await api.delete(`/chat/sessions/${confirmSession.id}`);
       toast.success('Conversation deleted');
-
       if (sessionId === confirmSession.id) {
         setSessionId(null);
         resetMessagesToDefault();
         sessionStorage.removeItem('hydroscope_chat_history');
         sessionStorage.removeItem('hydroscope_chat_session_id');
       }
-
       setConfirmSession(null);
       fetchSessions();
     } catch (error) {
@@ -320,6 +306,8 @@ export default function Chat() {
       const data = response.data;
       const returnedSessionId = data?.session_id;
 
+      console.log('AI response:', data);
+
       let aiResponseText = '';
       if (typeof data === 'string') aiResponseText = data;
       else if (data?.answer) aiResponseText = data.answer;
@@ -331,8 +319,6 @@ export default function Chat() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: aiResponseText,
-        sources: Array.isArray(data?.sources) ? data.sources : [],
-        confidence: data?.confidence || '',
         timestamp: new Date(),
       };
 
@@ -355,14 +341,6 @@ export default function Chat() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getConfidenceBadgeStyles = (conf?: string) => {
-    if (!conf) return null;
-    const c = conf.toLowerCase();
-    if (c.includes('high')) return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-    if (c.includes('medium')) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-    return 'bg-rose-500/20 text-rose-300 border-rose-500/30';
   };
 
   const formatSessionDate = (iso?: string) => {
@@ -408,7 +386,6 @@ export default function Chat() {
               transition={{ type: 'spring', damping: 26, stiffness: 220 }}
               className="fixed left-0 top-0 h-full bg-[#0B1B2D] border-r border-[#1B2F44] shadow-2xl md:shadow-none flex flex-col z-40 md:z-10 md:relative shrink-0 overflow-hidden text-slate-200"
             >
-              {/* Sidebar Header */}
               <div className="p-4 border-b border-[#1B2F44] flex items-center justify-between shrink-0">
                 <h2 className="font-heading text-lg text-white flex items-center gap-2">
                   <Bot className="w-5 h-5 text-white" />
@@ -422,7 +399,6 @@ export default function Chat() {
                 </button>
               </div>
 
-              {/* Sidebar Content */}
               <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-4">
                 <button
                   onClick={handleNewChat}
@@ -432,54 +408,51 @@ export default function Chat() {
                   New Conversation
                 </button>
 
-                <div className="flex-1 overflow-y-auto space-y-2 pr-0.5">
-                  {isSessionsLoading ? (
-                    <div className="flex flex-col gap-3 py-2 animate-pulse">
-                      {[1, 2, 3, 4].map(n => (
-                        <div key={n} className="h-14 bg-[#142639] border border-transparent rounded-xl" />
-                      ))}
-                    </div>
-                  ) : sessions.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400 text-sm font-medium">
-                      No saved chats found.<br />Start a new conversation!
-                    </div>
-                  ) : (
-                    sessions.map(session => {
-                      const isActive = sessionId === session.id;
-                      return (
-                        <div
-                          key={session.id}
-                          className={`group relative w-full rounded-xl transition-all border text-sm flex items-center justify-between overflow-hidden ${
-                            isActive
-                              ? 'bg-[#1B2F44] border-transparent text-white font-bold shadow-xs'
-                              : 'bg-transparent hover:bg-[#15273A] text-slate-300 border-transparent hover:text-white'
+                <div className="flex-1 overflow-y-auto space-y-2 pr-0.5 scrollbar-thin scrollbar-track-[#0B1B2D] scrollbar-thumb-[#2E4660] hover:scrollbar-thumb-[#3a5a7a]">                  {isSessionsLoading ? (
+                  <div className="flex flex-col gap-3 py-2 animate-pulse">
+                    {[1, 2, 3, 4].map(n => (
+                      <div key={n} className="h-14 bg-[#142639] border border-transparent rounded-xl" />
+                    ))}
+                  </div>
+                ) : sessions.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-sm font-medium">
+                    No saved chats found.<br />Start a new conversation!
+                  </div>
+                ) : (
+                  sessions.map(session => {
+                    const isActive = sessionId === session.id;
+                    return (
+                      <div
+                        key={session.id}
+                        className={`group relative w-full rounded-xl transition-all border text-sm flex items-center justify-between overflow-hidden ${isActive
+                            ? 'bg-[#1B2F44] border-transparent text-white font-bold shadow-xs'
+                            : 'bg-transparent hover:bg-[#15273A] text-slate-300 border-transparent hover:text-white'
                           }`}
+                      >
+                        <button
+                          onClick={() => handleSelectSession(session.id)}
+                          className="flex-1 text-left p-3 cursor-pointer select-none overflow-hidden"
                         >
-                          <button
-                            onClick={() => handleSelectSession(session.id)}
-                            className="flex-1 text-left p-3 cursor-pointer select-none overflow-hidden"
-                          >
-                            <span className="truncate pr-4 font-medium block">
-                              {session.title || `Conversation ${session.id}`}
-                            </span>
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1 font-normal mt-0.5">
-                              <Clock className="w-3 h-3 shrink-0 text-slate-500" />
-                              {formatSessionDate(session.created_at)}
-                            </span>
-                          </button>
+                          <span className="truncate pr-4 font-medium block">
+                            {session.title || `Conversation ${session.id}`}
+                          </span>
+                          <span className="text-[10px] text-slate-400 flex items-center gap-1 font-normal mt-0.5">
+                            <Clock className="w-3 h-3 shrink-0 text-slate-500" />
+                            {formatSessionDate(session.created_at)}
+                          </span>
+                        </button>
 
-                          {/* Delete button — opens modal */}
-                          <button
-                            onClick={e => handleDeleteClick(e, session)}
-                            className="mr-2 p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 md:opacity-0 active:opacity-100 cursor-pointer"
-                            title="Delete Conversation"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      );
-                    })
-                  )}
+                        <button
+                          onClick={e => handleDeleteClick(e, session)}
+                          className="mr-2 p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 md:opacity-0 active:opacity-100 cursor-pointer"
+                          title="Delete Conversation"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
                 </div>
               </div>
             </motion.aside>
@@ -489,7 +462,6 @@ export default function Chat() {
 
       {/* ── Main Chat Workspace ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200 shadow-sm px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-10 shrink-0">
           <div className="flex items-center">
             {!isSidebarOpen && (
@@ -514,7 +486,6 @@ export default function Chat() {
           </div>
         </header>
 
-        {/* Messages */}
         {isChatLoading ? (
           <div className="flex-1 flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-3">
@@ -538,7 +509,7 @@ export default function Chat() {
                   </div>
                   <h2 className="font-heading text-2xl font-bold text-navy mb-2">Ready to help!</h2>
                   <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
-                    Ask me anything about waterborne bacteria, infections, treatments, or your analysis results.
+                    Ask me anything about waterborne bacteria, infections or treatment.
                   </p>
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
                     {['What is Salmonella?', 'Explain Gram staining', 'How to treat E. coli?'].map(suggestion => (
@@ -567,39 +538,11 @@ export default function Chat() {
                       {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
                     </div>
 
-                    <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 shadow-xs relative ${
-                      msg.role === 'user'
+                    <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 shadow-xs relative ${msg.role === 'user'
                         ? 'bg-white border border-gray-100 text-slate-800 rounded-br-sm'
                         : 'bg-navy text-white rounded-bl-sm'
-                    }`}>
-                      {msg.role === 'assistant' && msg.confidence && (
-                        <span className={`inline-flex items-center text-[10px] font-semibold border px-2 py-0.5 rounded-full mb-1.5 ${getConfidenceBadgeStyles(msg.confidence)}`}>
-                          {msg.confidence}
-                        </span>
-                      )}
-
+                      }`}>
                       <p className="whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base">{msg.content}</p>
-
-                      {msg.role === 'assistant' && msg.sources && msg.sources.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/10">
-                          <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold mb-1.5 flex items-center gap-1">
-                            <FileText className="w-3.5 h-3.5" />
-                            Sources Cited
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {msg.sources.map((src, i) => (
-                              <span
-                                key={i}
-                                className="text-[10px] bg-white/10 hover:bg-white/20 text-white/90 border border-white/10 px-2.5 py-0.5 rounded-md transition-all truncate max-w-full"
-                                title={src}
-                              >
-                                {src}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                       <span className={`text-[10px] mt-2 block flex justify-end ${msg.role === 'user' ? 'text-slate-400' : 'text-blue-200'}`}>
                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
@@ -629,7 +572,6 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Input Bar */}
         <div className="bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.02)] z-10 shrink-0">
           <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center">
             <input
@@ -649,7 +591,7 @@ export default function Chat() {
             </button>
           </form>
           <div className="text-center mt-2 text-xs text-slate-400">
-            The AI has a memory of up to 10 messages — older context may be forgotten.
+            The AI has a memory of up to 10 messages, older context may be forgotten.
           </div>
         </div>
       </div>
