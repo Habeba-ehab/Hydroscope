@@ -590,7 +590,7 @@ export default function Chat() {
             <button
               type="submit"
               disabled={!input.trim() || isLoading || isChatLoading}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-navy text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bluenavy transition-colors shadow-md"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-navy text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-bluenavy transition-colors shadow-md"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-0.5 mt-0.5" />}
             </button>
