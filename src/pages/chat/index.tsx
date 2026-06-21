@@ -92,6 +92,11 @@ function parseSessionHistory(data: any): Message[] {
   return [];
 }
 
+const toLocalDate = (iso: string) => {
+  const utc = iso.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(iso) ? iso : iso + 'Z'
+  return new Date(utc)
+}
+
 function parseArrayOfMessagesOrQAs(arr: any[]): Message[] {
   const parsed: Message[] = [];
   arr.forEach((item, index) => {
@@ -102,7 +107,7 @@ function parseArrayOfMessagesOrQAs(arr: any[]): Message[] {
           id: `q-${index}-${Date.now()}`,
           role: 'user',
           content: item.question,
-          timestamp: item.created_at ? new Date(item.created_at) : new Date(),
+          timestamp: item.created_at ? toLocalDate(item.created_at) : new Date(),
         });
       }
       if (item.answer) {
@@ -110,7 +115,7 @@ function parseArrayOfMessagesOrQAs(arr: any[]): Message[] {
           id: `a-${index}-${Date.now()}`,
           role: 'assistant',
           content: item.answer,
-          timestamp: item.created_at ? new Date(item.created_at) : new Date(),
+          timestamp: item.created_at ? toLocalDate(item.created_at) : new Date(),
         });
       }
     } else {
@@ -121,9 +126,9 @@ function parseArrayOfMessagesOrQAs(arr: any[]): Message[] {
         role,
         content,
         timestamp: item.timestamp
-          ? new Date(item.timestamp)
+          ? toLocalDate(item.timestamp)
           : item.created_at
-            ? new Date(item.created_at)
+            ? toLocalDate(item.created_at)
             : new Date(),
       });
     }
@@ -425,8 +430,8 @@ export default function Chat() {
                       <div
                         key={session.id}
                         className={`group relative w-full rounded-xl transition-all border text-sm flex items-center justify-between overflow-hidden ${isActive
-                            ? 'bg-[#1B2F44] border-transparent text-white font-bold shadow-xs'
-                            : 'bg-transparent hover:bg-[#15273A] text-slate-300 border-transparent hover:text-white'
+                          ? 'bg-[#1B2F44] border-transparent text-white font-bold shadow-xs'
+                          : 'bg-transparent hover:bg-[#15273A] text-slate-300 border-transparent hover:text-white'
                           }`}
                       >
                         <button
@@ -538,9 +543,9 @@ export default function Chat() {
                       {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
                     </div>
 
-                    <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 shadow-xs relative ${msg.role === 'user'
-                        ? 'bg-white border border-gray-100 text-slate-800 rounded-br-sm'
-                        : 'bg-navy text-white rounded-bl-sm'
+                    <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 shadow-sm relative ${msg.role === 'user'
+                      ? 'bg-white border border-gray-100 text-slate-800 rounded-br-sm'
+                      : 'bg-navy text-white rounded-bl-sm'
                       }`}>
                       <p className="whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base">{msg.content}</p>
                       <span className={`text-[10px] mt-2 block flex justify-end ${msg.role === 'user' ? 'text-slate-400' : 'text-blue-200'}`}>
