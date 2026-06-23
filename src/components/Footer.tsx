@@ -4,6 +4,7 @@ const aboutLinks = [
   { to: '/', label: 'Home' },
   { to: '/analyze', label: 'Analyze' },
   { to: '/guide', label: 'Guide' },
+  { to: '/history', label: 'History' }
 ]
 
 const services = [

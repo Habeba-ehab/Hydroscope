@@ -5,9 +5,6 @@ export const API_BASE_URL = 'https://kenzykhaled55-gram-api.hf.space';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
-  // We remove the hardcoded Content-Type: application/json here
-  // so axios can automatically detect FormData and set the correct multipart/form-data boundary.
 });
 
 // Interceptor to attach the access token from cookies
@@ -41,7 +38,6 @@ api.interceptors.response.use(
           // Final format: FastAPI expects a query parameter named 'token'
           const response = await axios.post(`${API_BASE_URL}/refresh-token`, null, {
             params: { token: refreshToken },
-            withCredentials: true,
           });
           
           const { access_token, refresh_token: newRefreshToken } = response.data;
